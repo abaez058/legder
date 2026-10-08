@@ -1,0 +1,5 @@
+dependency:legder=0.1.0-dev=8702fac9f68fddfb082c97cb8509de651a7218f63256f3514cedeb53cc8f4b1b
+external:LEGDER_SHOWCASE_LIBRARY_TYPE=default
+external:LIBRARY_TYPE=default
+profile:legder_showcase=DEVELOPMENT
+switches:legder_showcase=-Og,-fdata-sections,-ffunction-sections,-g,-gnatVa,-gnatW8,-gnatw.X,-gnatwa,-gnaty-d,-gnaty3,-gnatyA,-gnatyB,-gnatyI,-gnatyO,-gnatyS,-gnatya,-gnatyb,-gnatyc,-gnatye,-gnatyf,-gnatyh,-gnatyi,-gnatyk,-gnatyl,-gnatym,-gnatyn,-gnatyp,-gnatyr,-gnatyt,-gnatyu,-gnatyx

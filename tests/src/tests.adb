@@ -8,6 +8,7 @@ with Legder;                use Legder;
 with Legder.Record_Format;  use Legder.Record_Format;
 with Legder.RAM_Device;
 with Legder.Log;
+with Legder.Index;
 with Legder.Store;
 
 procedure Tests is
@@ -188,12 +189,361 @@ procedure Tests is
       Check ("no write on refused put", Dev.Writes = Writes_Before);
    end Test_Capacity;
 
+   procedure Test_Key_Order is
+      NUL : constant Character := Character'Val (0);
+      FF  : constant Character := Character'Val (255);
+      Samples : constant array (1 .. 8) of Key :=
+        [K (""), K ("a"), K ("a" & NUL), K ("ab"), K ("abc"), K ("b"),
+         K ("b" & FF), K ("" & FF)];
+      Total, Irrefl, Trans : Boolean := True;
+   begin
+      Check ("key <: a < b", K ("a") < K ("b"));
+      Check ("key <: b not < a", not (K ("b") < K ("a")));
+      Check ("key <: empty is smallest", K ("") < K ("a"));
+      Check ("key <: prefix is smaller", K ("ab") < K ("abc"));
+      Check ("key <: padding not significant", K ("a") < K ("a" & NUL));
+      Check ("key <: first differing byte wins", K ("a" & FF) < K ("b"));
+      for A of Samples loop
+         if A < A then Irrefl := False; end if;
+         for B of Samples loop
+            --  Every pair must be less, equal, or greater, never two at once.
+            if (if A < B then 1 else 0) + (if A = B then 1 else 0)
+               + (if B < A then 1 else 0) /= 1
+            then
+               Total := False;
+            end if;
+            for C of Samples loop
+               if A < B and then B < C and then not (A < C) then
+                  Trans := False;
+               end if;
+            end loop;
+         end loop;
+      end loop;
+      Check ("key <: irreflexive", Irrefl);
+      Check ("key <: trichotomy with =", Total);
+      Check ("key <: transitive", Trans);
+   end Test_Key_Order;
+
+   ---------------------------------------------------------------------
+   --  Index tests
+   ---------------------------------------------------------------------
+
+   --  Deterministic pseudo-random numbers (no Ada.Numerics needed).
+   Seed : Natural := 12345;
+   function Rand (Bound : Positive) return Natural is
+   begin
+      Seed := (Seed * 1103 + 12345) mod 1_000_003;
+      return (Seed / 7) mod Bound;
+   end Rand;
+
+   function Num_Key (N : Natural) return Key is
+      Img : constant String := N'Image;
+   begin
+      return K ("key" & Img (Img'First + 1 .. Img'Last));
+   end Num_Key;
+
+   procedure Test_Index is
+      package Ix renames Legder.Index;
+      T      : Ix.Table;
+      S      : Ix.Slot;
+      OK     : Boolean;
+      Sorted : Boolean := True;
+      Slots_Unique : Boolean := True;
+      Seen   : array (Ix.Slot) of Boolean := [others => False];
+      Present : array (0 .. 399) of Boolean := [others => False];
+      Expected : Natural := 0;
+      N      : Natural;
+   begin
+      Ix.Clear (T);
+      Check ("index: empty", Ix.Count (T) = 0 and then Ix.Find (T, K ("a")) = 0);
+
+      --  Insert out of order, expect sorted order through Nth.
+      declare
+         Names : constant array (1 .. 5) of Key :=
+           [K ("m"), K ("c"), K ("x"), K ("a"), K ("b")];
+      begin
+         for Name of Names loop
+            Ix.Insert (T, Name, S, OK);
+         end loop;
+      end;
+      Check ("index: five inserted", Ix.Count (T) = 5);
+      Check ("index: sorted a", Ix.Nth (T, 1) = K ("a"));
+      Check ("index: sorted b", Ix.Nth (T, 2) = K ("b"));
+      Check ("index: sorted x last", Ix.Nth (T, 5) = K ("x"));
+
+      declare
+         Gone : Boolean;
+      begin
+         Ix.Remove (T, K ("c"), Gone);
+         Check ("index: remove present", Gone and then Ix.Find (T, K ("c")) = 0);
+         Ix.Remove (T, K ("zzz"), Gone);
+         Check ("index: remove absent is a no-op", not Gone and then Ix.Count (T) = 4);
+      end;
+
+      --  Fill to capacity, then one more must fail cleanly.
+      Ix.Clear (T);
+      for I in 1 .. Ix.Capacity loop
+         Ix.Insert (T, Num_Key (I), S, OK);
+         exit when not OK;
+         if Seen (S) then Slots_Unique := False; end if;
+         Seen (S) := True;
+      end loop;
+      Check ("index: fills to capacity", Ix.Count (T) = Ix.Capacity and then Ix.Is_Full (T));
+      Check ("index: every slot handed out once", Slots_Unique);
+      Ix.Insert (T, K ("overflow"), S, OK);
+      Check ("index: insert on full fails, count unchanged",
+             not OK and then Ix.Count (T) = Ix.Capacity);
+      declare
+         Gone : Boolean;
+      begin
+         Ix.Remove (T, Num_Key (7), Gone);
+         Ix.Insert (T, K ("overflow"), S, OK);
+         Check ("index: slot recycled after remove", Gone and then OK);
+      end;
+
+      --  Random insert/remove against a boolean model.
+      Ix.Clear (T);
+      for Step in 1 .. 6000 loop
+         N := Rand (400);
+         if Rand (2) = 0 then
+            if Ix.Find (T, Num_Key (N)) = 0 then
+               Ix.Insert (T, Num_Key (N), S, OK);
+               if OK then
+                  Present (N) := True;
+               end if;
+            end if;
+         else
+            declare
+               Gone : Boolean;
+            begin
+               Ix.Remove (T, Num_Key (N), Gone);
+               Present (N) := False;
+            end;
+         end if;
+      end loop;
+      for I in Present'Range loop
+         if Present (I) then Expected := Expected + 1; end if;
+      end loop;
+      Check ("index: random count matches model", Ix.Count (T) = Expected);
+      declare
+         Model_OK : Boolean := True;
+      begin
+         for I in Present'Range loop
+            if Present (I) /= (Ix.Find (T, Num_Key (I)) /= 0) then
+               Model_OK := False;
+            end if;
+         end loop;
+         Check ("index: random membership matches model", Model_OK);
+      end;
+      for Pos in 2 .. Ix.Count (T) loop
+         if not (Ix.Nth (T, Pos - 1) < Ix.Nth (T, Pos)) then Sorted := False; end if;
+      end loop;
+      Check ("index: random ops keep keys strictly sorted", Sorted);
+      Check ("index: well formed after random ops", Ix.Well_Formed (T));
+   end Test_Index;
+
+   --  B-tree stress: check the tree's shape after EVERY operation, in
+   --  ascending, descending and random order, including emptying the
+   --  tree completely and refilling it.
+   procedure Test_BTree_Stress is
+      package Ix renames Legder.Index;
+      T    : Ix.Table;
+      S    : Ix.Slot;
+      OK   : Boolean;
+      Gone : Boolean;
+      Shape_OK : Boolean := True;
+      Order_OK : Boolean := True;
+      Order : array (1 .. Ix.Capacity) of Positive;
+
+      procedure Check_Shape is
+      begin
+         if not Ix.Well_Formed (T) then Shape_OK := False; end if;
+      end Check_Shape;
+
+      procedure Check_Order is
+      begin
+         for Pos in 2 .. Ix.Count (T) loop
+            if not (Ix.Nth (T, Pos - 1) < Ix.Nth (T, Pos)) then
+               Order_OK := False;
+            end if;
+         end loop;
+      end Check_Order;
+
+      --  Insert 1 .. Capacity in the given order, check, then remove in
+      --  the given order, check.
+      procedure Fill_And_Drain (Name : String) is
+         Gone_All : Boolean := True;
+      begin
+         Shape_OK := True;
+         Order_OK := True;
+         Ix.Clear (T);
+         for I in Order'Range loop
+            Ix.Insert (T, Num_Key (Order (I)), S, OK);
+            if not OK then Shape_OK := False; end if;
+            Check_Shape;
+         end loop;
+         Check_Order;
+         Check (Name & ": full, well formed, sorted",
+                Ix.Count (T) = Ix.Capacity and then Shape_OK and then Order_OK);
+         for I in Order'Range loop
+            Ix.Remove (T, Num_Key (Order (I)), Gone);
+            if not Gone then Gone_All := False; end if;
+            Check_Shape;
+         end loop;
+         Check (Name & ": drained to empty, well formed",
+                Gone_All and then Ix.Count (T) = 0 and then Shape_OK
+                and then Ix.Well_Formed (T));
+      end Fill_And_Drain;
+   begin
+      for I in Order'Range loop Order (I) := I; end loop;
+      Fill_And_Drain ("btree ascending");
+
+      for I in Order'Range loop Order (I) := Ix.Capacity + 1 - I; end loop;
+      Fill_And_Drain ("btree descending");
+
+      --  Fisher-Yates shuffle of 1 .. Capacity, a few different shuffles.
+      for Round in 1 .. 4 loop
+         for I in Order'Range loop Order (I) := I; end loop;
+         for I in reverse 2 .. Order'Last loop
+            declare
+               J   : constant Positive := Rand (I) + 1;
+               Tmp : constant Positive := Order (I);
+            begin
+               Order (I) := Order (J);
+               Order (J) := Tmp;
+            end;
+         end loop;
+         Fill_And_Drain ("btree shuffle" & Round'Image);
+      end loop;
+
+      --  Insert in one order, remove in another (forces borrows and merges
+      --  in both directions).
+      Shape_OK := True;
+      Ix.Clear (T);
+      for I in 1 .. Ix.Capacity loop
+         Ix.Insert (T, Num_Key (I), S, OK);
+      end loop;
+      for I in 1 .. Ix.Capacity / 2 loop      --  remove the middle outwards
+         Ix.Remove (T, Num_Key (Ix.Capacity / 2 + I), Gone);
+         Check_Shape;
+         Ix.Remove (T, Num_Key (Ix.Capacity / 2 + 1 - I), Gone);
+         Check_Shape;
+      end loop;
+      Check ("btree middle-out removal: empty, well formed",
+             Ix.Count (T) = 0 and then Shape_OK);
+
+      --  Long random run, shape checked at every step, against a model.
+      declare
+         Present : array (0 .. 599) of Boolean := [others => False];
+         Model_N : Natural := 0;
+         Model_OK : Boolean := True;
+         N : Natural;
+      begin
+         Shape_OK := True;
+         Ix.Clear (T);
+         for Step in 1 .. 20000 loop
+            N := Rand (600);
+            if Rand (100) < 55 then
+               if Ix.Find (T, Num_Key (N)) = 0 then
+                  Ix.Insert (T, Num_Key (N), S, OK);
+                  if OK then
+                     Present (N) := True;
+                     Model_N := Model_N + 1;
+                  end if;
+               end if;
+            else
+               Ix.Remove (T, Num_Key (N), Gone);
+               if Gone then
+                  Present (N) := False;
+                  Model_N := Model_N - 1;
+               end if;
+            end if;
+            Check_Shape;
+            if Ix.Count (T) /= Model_N then Model_OK := False; end if;
+         end loop;
+         for I in Present'Range loop
+            if Present (I) /= (Ix.Find (T, Num_Key (I)) /= 0) then
+               Model_OK := False;
+            end if;
+         end loop;
+         Order_OK := True;
+         Check_Order;
+         Check ("btree 20000 random ops: shape OK at every step", Shape_OK);
+         Check ("btree 20000 random ops: count and membership match model", Model_OK);
+         Check ("btree 20000 random ops: keys strictly sorted", Order_OK);
+      end;
+   end Test_BTree_Stress;
+
+   --  Store against a naive oracle (linear scan, the old placeholder's
+   --  behaviour), then crash/reopen and compare again.
+   procedure Test_Store_Random is
+      type Model_Entry is record
+         Live : Boolean := False;
+         Val  : Natural := 0;
+      end record;
+      Model : array (0 .. 39) of Model_Entry;
+      N     : Natural;
+      OK    : Boolean;
+      Got   : Value;
+      Found : Boolean;
+      Ops   : Natural := 0;
+
+      function Matches (S : KV.Store) return Boolean is
+         Good : Boolean := True;
+         Live : Natural := 0;
+      begin
+         for I in Model'Range loop
+            KV.Get (S, Num_Key (I), Got, Found);
+            if Model (I).Live then
+               Live := Live + 1;
+               if not (Found and then Same (Got, V (Model (I).Val'Image))) then
+                  Good := False;
+               end if;
+            elsif Found then
+               Good := False;
+            end if;
+         end loop;
+         return Good and then KV.Count (S) = Live;
+      end Matches;
+   begin
+      Dev.Erase;
+      declare
+         S : KV.Store;
+         M : Natural;
+      begin
+         KV.Open (S, M);
+         for Step in 1 .. 200 loop
+            N := Rand (40);
+            if Rand (3) /= 0 then
+               KV.Put (S, Num_Key (N), V (Step'Image), OK);
+               if OK then Model (N) := (Live => True, Val => Step); Ops := Ops + 1; end if;
+            else
+               KV.Delete (S, Num_Key (N), OK);
+               if OK then Model (N).Live := False; Ops := Ops + 1; end if;
+            end if;
+         end loop;
+         Check ("store random: live state matches oracle", Matches (S));
+      end;
+      declare
+         S : KV.Store;
+         M : Natural;
+      begin
+         KV.Open (S, M);
+         Check ("store random: replayed every committed op", M = Ops);
+         Check ("store random: reopened state matches oracle", Matches (S));
+      end;
+   end Test_Store_Random;
+
 begin
    Test_CRC;
    Test_Record;
    Test_Log;
    Test_Store;
    Test_Capacity;
+   Test_Key_Order;
+   Test_Index;
+   Test_BTree_Stress;
+   Test_Store_Random;
    New_Line;
    if Failures = 0 then
       Put_Line ("all tests passed");

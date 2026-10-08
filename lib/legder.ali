@@ -1,0 +1,80 @@
+V "GNAT Lib v16"
+A -O1
+A -gnatA
+A -gnat2022
+A -gnata
+A -gnatwa
+A -gnatwe
+A -gnatVa
+A -gnatyg
+A -gnatyM100
+A -g
+A -fstack-check=specific
+A -mtune=generic
+A -march=x86-64
+P ZX
+
+RN
+RV NO_IMPLICIT_CONDITIONALS
+RV NO_LONG_LONG_INTEGERS
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV NO_IMPLEMENTATION_PRAGMAS
+
+U legder%b		legder.adb		8e9a5ac4 NE OO PK
+
+U legder%s		legder.ads		7c712432 NE OO PU PK
+
+D legder.ads		20261008051144 7c712432 legder%s
+D legder.adb		20261008051140 f2eb7ef6 legder%b
+D system.ads		20260430083320 898beeee system%s
+G a e
+G c Z s s [Oeq legder 54 13 none]
+G c Z s b [Olt legder 59 13 none]
+G c Z s s [same legder 64 13 none]
+G c Z s b [crc legder 84 13 none]
+G c Z s s [byte_arrayIP legder 17 9 none]
+G c Z s s [keyIP legder 44 9 none]
+G c Z s s [valueIP legder 49 9 none]
+X 1 legder.ads
+9K9*Legder 90l5 90e11 2|1b14 33l5 33t11
+15M9*Byte 17r51
+17A9*Byte_Array(15M9)<integer> 25r21 46r16 51r16 84r25 2|3r25
+19N4*Block_Size 24r47
+24I12*Block_Offset{natural} 25r33
+25A12*Block{17A9}<integer>
+27N4*Max_Blocks 30r35
+30I9*Block_Index<short_integer>
+36N4*Max_Key 41r47 46r33
+37N4*Max_Value 42r47 51r33
+41I12*Key_Length{natural} 45r16
+42I12*Value_Length{natural} 50r16
+44R9*Key 47e14 54r25 59r25 2|20r25
+45i7*Length{41I12} 55r9 55r20 56r37 2|21r46 21r56 30r16 30r27
+46a7*Bytes{17A9} 56r49 56r63 2|25r15 25r30 26r22 26r36
+49R9*Value 52e14 64r26
+50i7*Length{42I12} 65r9 65r20 66r37
+51a7*Bytes{17A9} 66r49 66r63
+54V14*"="{boolean} 54b14 54>18 54>21
+54r18 L{44R9} 55r7 56r35 56r47
+54r21 R{44R9} 55r18 56r61
+56i25 I{integer} 56r56 56r70
+59V14*"<"{boolean} 59>18 59>21 2|20b14 31l9 31t11
+59r18 L{44R9} 2|20b18 21r44 25r13 26r20 30r14
+59r21 R{44R9} 2|20b21 21r54 25r28 26r34 30r25
+64V13*Same{boolean} 64b13 64>19 64>22
+64r19 L{49R9} 65r7 66r35 66r47
+64r22 R{49R9} 65r18 66r61
+66i25 I{integer} 66r56 66r70
+72M9*Sequence
+82M9*CRC32 84r44 2|3r44 4r23 5r14 8r21
+84V13*CRC{82M9} 84>18 2|3b13 18l8 18t11
+84a18 Data{17A9} 2|3b18 7r16 8r28
+X 2 legder.adb
+4m7 Poly{1|82M9} 11r33
+5m7 C{1|82M9} 8m10 8r15 10r17 11m16 11r22 13m16 13r21 17r14
+7i11 I{integer} 8r34
+9i14 Bit{integer}
+21i7 N{natural} 24r21
+24i11 I{integer} 25r22 25r37 26r29 26r43
+

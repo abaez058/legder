@@ -17,4 +17,17 @@ package body Legder with SPARK_Mode is
       return C xor 16#FFFFFFFF#;
    end CRC;
 
+   function "<" (L, R : Key) return Boolean is
+      N : constant Natural := Natural'Min (L.Length, R.Length);
+   begin
+      --  The first byte that differs decides the order.
+      for I in 1 .. N loop
+         if L.Bytes (I) /= R.Bytes (I) then
+            return L.Bytes (I) < R.Bytes (I);
+         end if;
+      end loop;
+      --  All shared bytes match, so the shorter key is smaller.
+      return L.Length < R.Length;
+   end "<";
+
 end Legder;

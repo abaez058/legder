@@ -4,10 +4,10 @@
 --  before they touch the in-memory table, so the table is always a
 --  replay of the log. Open replays the log to rebuild the table.
 --
---  The in-memory table in the seed is a PLACEHOLDER: a linear array
---  scanned on every Get. Correct, slow, and the thing to replace with
---  a real index (sorted array, hash, B-tree) once the crash tests
---  pass. Do not touch the commit order while doing so.
+--  The in-memory table is a Legder.Index (sorted array + binary
+--  search) plus a slab of values indexed by the slot the index hands
+--  out. The index is the part to swap for a B-tree; the commit order
+--  below does not change when it is swapped.
 --
 --  PROOF TARGET (the whole point of the project)
 --    S1  After Open, for every key K: Get (K) is the value of the last
@@ -21,6 +21,7 @@
 --  S1 is the target for the year. State it as a ghost model (a
 --  functional map) and prove Put, Delete and Open against it.
 
+with Legder.Index;
 with Legder.Log;
 
 generic
@@ -30,7 +31,7 @@ generic
    with procedure Sync;
 package Legder.Store with SPARK_Mode is
 
-   Max_Entries : constant := 256;
+   Max_Entries : constant := Legder.Index.Capacity;
    --  Live keys the table can hold. Bounded; a full table refuses new
    --  keys rather than allocating.
 
@@ -56,21 +57,15 @@ package Legder.Store with SPARK_Mode is
 
 private
 
-   type Entry_Rec is record
-      Live : Boolean := False;
-      K    : Key;
-      V    : Value;
-   end record;
-
-   type Entry_Index is range 1 .. Max_Entries;
-   type Entry_Array is array (Entry_Index) of Entry_Rec;
+   type Value_Slab is array (Legder.Index.Slot) of Value;
 
    package L is new Legder.Log (Block_Count, Read, Write, Sync);
 
    type Store is limited record
-      Log   : L.State;
-      Table : Entry_Array;
-      Live  : Natural := 0;
+      Log    : L.State;
+      Idx    : Legder.Index.Table;
+      Values : Value_Slab;
    end record;
+   --  Idx maps key -> slot; Values (slot) is that key's value.
 
 end Legder.Store;

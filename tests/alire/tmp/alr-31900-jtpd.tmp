@@ -1,0 +1,16 @@
+name = "legder_tests"
+description = "legder unit tests"
+version = "0.1.0-dev"
+authors = ["Olivier Henley"]
+maintainers = ["Olivier Henley <henley@adacore.com>"]
+maintainers-logins = ["ohenley"]
+licenses = "Apache-2.0"
+
+executables = ["tests"]
+project-files = ["legder_tests.gpr"]
+
+[[depends-on]]
+legder = "*"
+
+[[pins]]
+legder = { path = ".." }

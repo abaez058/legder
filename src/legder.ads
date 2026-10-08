@@ -56,6 +56,11 @@ package Legder with SPARK_Mode, Pure is
       and then (for all I in 1 .. L.Length => L.Bytes (I) = R.Bytes (I)));
    --  Keys compare on their live bytes only; padding is ignored.
 
+   function "<" (L, R : Key) return Boolean
+     with Global => null;
+   --  True if L sorts before R. Compares bytes in order; if one key is a
+   --  prefix of the other, the shorter one comes first.
+
    function Same (L, R : Value) return Boolean is
      (L.Length = R.Length
       and then (for all I in 1 .. L.Length => L.Bytes (I) = R.Bytes (I)));

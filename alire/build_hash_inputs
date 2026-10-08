@@ -1,0 +1,5 @@
+external:LEGDER_LIBRARY_TYPE=default
+external:LIBRARY_TYPE=default
+profile:legder=RELEASE
+switches:legder=-O3,-fdata-sections,-ffunction-sections,-gnatW8,-gnatn
+version:gnat_native=16.1.0

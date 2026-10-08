@@ -1,0 +1,132 @@
+V "GNAT Lib v16"
+A -O1
+A -gnatA
+A -gnat2022
+A -gnata
+A -gnatwa
+A -gnatwe
+A -gnatVa
+A -gnatyg
+A -gnatyM100
+A -g
+A -fstack-check=specific
+A -mtune=generic
+A -march=x86-64
+P ZX
+
+RN
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV NO_IMPLEMENTATION_PRAGMAS
+
+U legder.store%b	legder-store.adb	213fcbe2 NE OO PK GE
+W legder%s		legder.adb		legder.ali
+W legder.record_format%s  legder-record_format.adb  legder-record_format.ali
+
+U legder.store%s	legder-store.ads	76756def BN EE NE OO PK GE
+W legder%s		legder.adb		legder.ali
+W legder.index%s	legder-index.adb	legder-index.ali
+W legder.log%s		legder-log.adb		legder-log.ali
+Z legder.record_format%s  legder-record_format.adb  legder-record_format.ali
+
+D legder.ads		20261008051144 7c712432 legder%s
+D legder-index.ads	20261008053704 fcf6411a legder.index%s
+D legder-log.ads	20261008044746 3068d4b9 legder.log%s
+D legder-log.adb	20261008044746 3261bd97 legder.log%b
+D legder-record_format.ads  20261008044746 11340970 legder.record_format%s
+D legder-store.ads	20261008053722 c69adc7e legder.store%s
+D legder-store.adb	20261008053722 f6911eec legder.store%b
+D system.ads		20260430083320 898beeee system%s
+G a e
+G c Z s b [store legder 32 16 none]
+X 1 legder.ads
+9K9*Legder 90e11 6|24r6 25r6 32r9 34r30 60r30 62r21 66r16 71r5 7|1r6 2r14
+. 4r8 12r23 12r52 20r30 23r19 37r19 55r7 67r10 67r52 95r23 95r52 106r50 108r5
+15M9*Byte
+17A9*Byte_Array(15M9)<integer>
+25A12*Block{17A9}<integer> 6|29r58 30r54
+30I9*Block_Index<short_integer> 6|28r18 29r34 30r34
+44R9*Key 47e14 6|44r41 48r44 53r34 7|65r41 81r44 94r34
+49R9*Value 52e14 6|44r50 53r47 60r52 7|65r50 82r14 94r47
+72M9*Sequence
+X 2 legder-index.ads
+31K16*Index 128e17 6|24w13 34r37 60r37 66r23 7|12r30 12r59 20r37 23r26 37r26
+. 55r14 67r17 67r59 95r30 95r59 106r57
+35N4*Capacity 6|34r43
+38I12*Slot{positive} 6|60r43 7|20r43
+39I12*Slot_Or_None{natural} 7|12r36 95r36
+41R9*Table 122e14 6|66r29
+43U14*Clear 7|55s20
+46V13*Count{natural} 7|106s63
+49V13*Is_Full{boolean} 7|67s65
+51V13*Find{39I12} 7|12s65 67s23 95s65
+54U14*Insert 7|23s32
+64U14*Remove 7|37s32
+X 3 legder-log.ads
+31k16*Log 69e15 6|25w13 62r28
+37R9 State 6|65r18[62]
+39m7 Last_Seq{1|72M9} 7|73r34[6|62] 86r34[6|62]
+46U14 Open 7|57s9[6|62]
+52U14 Append 7|71s9[6|62] 84s9[6|62]
+64u14 Scan 7|53r37[6|62]
+X 5 legder-record_format.ads
+26K16*Record_Format 47e25 7|1w13 4r15 71r24 73r52 84r24 86r52
+30n21*Put{30E9} 7|15r15 71r38 73r66
+30n26*Delete{30E9} 7|32r15 84r38 86r66
+32R9*Log_Record 37e14 7|9r43 11r43 48r28 49r28
+33m7*Seq{1|72M9} 7|73m21 86m21
+34e7*Kind{30E9} 7|14r14 73m44 86m44
+35r7*K{1|44R9} 7|12r80 23r49 37r49 73m71 86m74
+36r7*V{1|49R9} 7|17r37 25r47 73m79 86m82
+X 6 legder-store.ads
+28i4 Block_Count{1|30I9} 62r33
+29U19 Read 29>26 29<47 62r46
+29i26 Index{1|30I9}
+29a47 Data{1|25A12}
+30U19 Write 30>26 30>47 62r52
+30i26 Index{1|30I9}
+30a47 Data{1|25A12}
+31U19 Sync 62r59
+32k16*Store 1|9k9 6|28z4 29z19 30z19 31z19 60E9 71l12 71e17 7|2b21 108l12
+. 108t17
+34N4*Max_Entries
+38R9*Store 40r28 44r30 48r33 53r23 55r24 64c9 68e14 7|9r32 11r32 47r28 65r30
+. 81r33 94r23 106r24
+40U14*Open 40<20 40<35 7|47b14 59l8 59t12
+40r20 S{38R9} 7|47b20 51m17 55m27 55r27 56m7 57m15 57r15 58r19
+40i35 Replayed{natural} 7|47b35 57m22
+44U14*Put 44=19 44>37 44>46 44<57 7|65b14 75l8 75t11
+44r19 S{38R9} 7|65b19 67r29 67r74 71m17 71r17 73m17 73r28
+44r37 K{1|44R9} 7|65b37 67r36 71r43 73r76
+44r46 V{1|49R9} 7|65b46 71r46 73r84
+44b57 Success{boolean} 7|65b57 68m10 71m49 72r10
+48U14*Delete 48=22 48>40 48<49 7|81b14 88l8 88t14
+48r22 S{38R9} 7|81b22 84m17 84r17 86m17 86r28
+48r40 K{1|44R9} 7|81b40 84r46 86r79
+48b49 Success{boolean} 7|81b49 84m55 85r10
+53U14*Get 53>19 53>30 53<39 53<54 7|94b14 104l8 104t11
+53r19 S{38R9} 7|94b19 95r71 101r15
+53r30 K{1|44R9} 7|94b30 95r78
+53r39 V{1|49R9} 7|94b39 98m10 101m10
+53b54 Found{boolean} 7|94b54 99m10 102m10
+55V13*Count{natural} 55>20 7|106b13
+55r20 S{38R9} 7|106r70
+60A9 Value_Slab(1|49R9)<integer> 67r16
+62K12 L[3|31] 65r16 7|53r35 57r7 71r7 84r7
+65r7 Log{3|37R9[62]} 7|57m17 58r21 71m19 73r30 84m19 86r30
+66r7 Idx{2|41R9} 7|12r73 23m42 37m42 55m29 67r31 67r76 95r73 106r72
+67a7 Values{60A9} 7|17m18 25m24 56m9 101r17
+X 7 legder-store.adb
+9U14 Apply 9=21 9>39 11b14 41l8 41t13 51s10 73s10 86s10
+9r21 S{6|38R9} 11b21 12r71 17m16 23m40 23r40 25m22 37m40 37r40
+9r39 R{5|32R9} 11b39 12r78 14r12 17r35 23r47 25r45 37r47
+12i7 Slot{2|39I12} 16r16 17r26 33r16
+20i19 New_Slot{2|38I12} 23m52 25r32
+21b19 Ok{boolean} 23m62 24r22
+35b19 Removed{boolean} 37m52
+48U17 Visit 48>24 49b17 52l11 52t16 53r43
+48r24 R{5|32R9} 49b24 51r20
+53U17 Replay_All[3|64] 58s7
+82r7 None{1|49R9} 84r49 86r87
+95i7 Slot{2|39I12} 97r10 101r25
+

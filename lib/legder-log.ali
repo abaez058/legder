@@ -1,0 +1,100 @@
+V "GNAT Lib v16"
+A -O1
+A -gnatA
+A -gnat2022
+A -gnata
+A -gnatwa
+A -gnatwe
+A -gnatVa
+A -gnatyg
+A -gnatyM100
+A -g
+A -fstack-check=specific
+A -mtune=generic
+A -march=x86-64
+P ZX
+
+RN
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV NO_IMPLEMENTATION_PRAGMAS
+
+U legder.log%b		legder-log.adb		0209692e NE OO PK GE
+W legder%s		legder.adb		legder.ali
+
+U legder.log%s		legder-log.ads		5d2df9fb BN EE NE OO PK GE
+W legder%s		legder.adb		legder.ali
+W legder.record_format%s  legder-record_format.adb  legder-record_format.ali
+
+D legder.ads		20261008051144 7c712432 legder%s
+D legder-log.ads	20261008044746 3068d4b9 legder.log%s
+D legder-log.adb	20261008044746 3261bd97 legder.log%b
+D legder-record_format.ads  20261008044746 11340970 legder.record_format%s
+D system.ads		20260430083320 898beeee system%s
+G a e
+G c Z s b [log legder 31 16 none]
+X 1 legder.ads
+9K9*Legder 90e11 2|24r6 24r32 31r9 69r5 3|1r14 69r5
+15M9*Byte
+17A9*Byte_Array(15M9)<integer>
+25A12*Block{17A9}<integer> 2|28r58 29r54 3|8r15 33r11 54r15
+27N4*Max_Blocks 2|33r43
+30I9*Block_Index<short_integer> 2|27r18 28r34 29r34 3|15r16 42r14 59r16
+44R9*Key 47e14 2|52r60 3|32r60
+49R9*Value 52e14 2|52r69 3|32r69
+72M9*Sequence 2|39r18 3|11r15
+X 2 legder-log.ads
+27i4 Block_Count{1|30I9} 44r25 3|15r39
+28U19 Read 28>26 28<47 3|18s10 59s10
+28i26 Index{1|30I9}
+28a47 Data{1|25A12}
+29U19 Write 29>26 29>47 3|42s7
+29i26 Index{1|30I9}
+29a47 Data{1|25A12}
+30U19 Sync 3|43s7
+31k16*Log 1|9k9 2|27z4 28z19 29z19 30z19 69l12 69e15 3|1b21 69l12 69t15
+33I12*Position{natural} 38r18 3|12r15
+37R9*State 41e14 43r26 46r28 52r33 64r24 3|7r28 32r33 53r24
+38i7 Head{33I12} 44r9 55r47 55r56 57r36 57r45 3|25m13 42r29 44m9 44r19 58r23
+39m7 Last_Seq{1|72M9} 56r54 56r67 58r45 58r58 3|25m27 40r22 45m9
+40b7 Opened{boolean} 47r21 53r21 54r21 65r20 3|25m44
+43V13*Is_Full{boolean} 43b13 43>22 3|36s10
+43r22 S{37R9} 44r7
+46U14*Open 46<20 46<35 3|7b14 26l8 26t12
+46r20 S{37R9} 47r19 3|7b20 25m7
+46i35 Recovered{natural} 3|7b35 14m7 17r33 23m10 23r23
+52U14*Append 52=22 52>40 52>56 52>65 52<76 3|32b14 47l8 47t14
+52r22 S{37R9} 53r19 54r19 55r45 55r54 56r52 56r65 57r34 57r43 58r43 58r56
+. 3|32b22 36r19 40r20 42r27 44m7 44r17 45m7
+52e40 Kind{4|30E9} 3|32b40 40r44
+52r56 K{1|44R9} 3|32b56 40r55
+52r65 V{1|49R9} 3|32b65 40r63
+52b76 Success{boolean} 55r32 3|32b76 37m10 46m7
+63U22 Visit 63>29 3|65s10
+63r29 R{4|32R9}
+64u14*Scan 64>20 3|53b14 67l8 67t12
+64r20 S{37R9} 65r18 3|53b20 58r21
+X 3 legder-log.adb
+8a7 B{1|25A12} 18m19 19r18
+9r7 R{4|32R9} 19m21 20r38 21r17
+10b7 Valid{boolean} 19m24 20r24
+11m7 Seq{1|72M9} 20r47 21m10 25r39
+12i7 Head{2|33I12} 16r33 22m10 22r18 25r21
+15i11 I<short_integer> 16r49 17r54 18r16
+33a7 B{1|25A12} 41m18 42r36
+34r7 R{4|32R9} 40m7 41r15 45r21
+54a7 B{1|25A12} 59m33 60r18
+55r7 R{4|32R9} 60m21 65r17
+56b7 Valid{boolean} 60m24 64r24
+58i11 P{integer} 59r29
+X 4 legder-record_format.ads
+26K16*Record_Format 2|24w13 24r39 4|47e25
+30E9*Op_Kind 2|52r47 3|32r47 4|30e33
+32R9*Log_Record 2|63r33 3|9r15 34r11 55r15 4|37e14
+33m7*Seq{1|72M9} 3|20r40 21r19 40m13 45r23
+34e7*Kind{30E9} 3|40m36
+35r7*K{1|44R9} 3|40m50
+36r7*V{1|49R9} 3|40m58
+39U14*Encode 3|41s7
+42U14*Decode 3|19s10 60s10
+

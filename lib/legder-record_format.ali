@@ -1,0 +1,133 @@
+V "GNAT Lib v16"
+A -O1
+A -gnatA
+A -gnat2022
+A -gnata
+A -gnatwa
+A -gnatwe
+A -gnatVa
+A -gnatyg
+A -gnatyM100
+A -g
+A -fstack-check=specific
+A -mtune=generic
+A -march=x86-64
+P ZX
+
+RN
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV NO_IMPLEMENTATION_PRAGMAS
+
+U legder.record_format%b  legder-record_format.adb  d3c3703d NE OO PK
+W legder%s		legder.adb		legder.ali
+Z system.assertions%s	s-assert.adb		s-assert.ali
+
+U legder.record_format%s  legder-record_format.ads  6d452d42 EE NE OO PK
+W legder%s		legder.adb		legder.ali
+
+D ada.ads		20260430083320 76789da1 ada%s
+D a-assert.ads		20260430083320 ba465f5c ada.assertions%s
+D a-unccon.ads		20260430083320 0e9b276f ada.unchecked_conversion%s
+D legder.ads		20261008051144 7c712432 legder%s
+D legder-record_format.ads  20261008044746 11340970 legder.record_format%s
+D legder-record_format.adb  20261008044746 c2f7794d legder.record_format%b
+D system.ads		20260430083320 898beeee system%s
+D s-assert.ads		20260430083320 9c4520c7 system.assertions%s
+D s-exctab.ads		20260430083320 91bef6ef system.exception_table%s
+D s-stalib.ads		20260430083320 1c9580f6 system.standard_library%s
+G a e
+G c Z s b [encode legder__record_format 39 14 none]
+G c Z s b [decode legder__record_format 42 14 none]
+G c Z s s [log_recordIP legder__record_format 32 9 none]
+G c Z b b [put_u32 legder__record_format 12 14 none]
+G c Z b b [get_u32 legder__record_format 14 13 none]
+G c Z b b [put_u64 legder__record_format 16 14 none]
+G c Z b b [get_u64 legder__record_format 18 13 none]
+G r c none [encode legder__record_format 39 14 none] [crc legder 84 13 none]
+G r s key [decode legder__record_format 42 14 none] [keyIP legder 44 9 none]
+G r s value [decode legder__record_format 42 14 none] [valueIP legder 49 9 none]
+G r c none [decode legder__record_format 42 14 none] [crc legder 84 13 none]
+G r s key [log_recordIP legder__record_format 32 9 none] [keyIP legder 44 9 none]
+G r s value [log_recordIP legder__record_format 32 9 none] [valueIP legder 49 9 none]
+X 4 legder.ads
+9K9*Legder 90e11 5|26r9 47r5 6|1r14 115r5
+15M9*Byte 6|25r28 43r28 67r23 68r27 69r27
+17A9*Byte_Array(15M9)<integer>
+19N4*Block_Size 6|13r28 15r28 17r28 19r28
+24I12*Block_Offset{natural} 6|12r50 14r42 16r50 18r42 21r50 30r42 39r50 48r42
+25A12*Block{17A9}<integer> 5|39r46 42r26 6|12r34 14r26 16r34 18r26 21r34
+. 30r26 39r34 48r26 61r46 85r26
+36N4*Max_Key 6|94r40
+37N4*Max_Value 6|94r61
+41I12*Key_Length{natural}
+42I12*Value_Length{natural}
+44R9*Key 47e14 5|35r14
+45i7*Length{41I12} 6|67r33 70r25 102m11
+46a7*Bytes{17A9} 6|71r37 104m14
+49R9*Value 52e14 5|36r14
+50i7*Length{42I12} 6|68r37 69r37 74r28 107m14
+51a7*Bytes{17A9} 6|75r42 109m17
+54V14*"="{boolean} 5|32s9
+72M9*Sequence 5|33r14 6|16r68 18r63 39r68 40r11 48r63 49r11 52r25
+82M9*CRC32 6|12r68 14r63 21r68 22r11 30r63 31r11 34r25
+84V13*CRC{82M9} 6|78s28 97s34
+X 5 legder-record_format.ads
+26K16*Record_Format 4|9k9 5|47l12 47e25 6|1b21 115l12 115t25
+28N4*Magic 6|64r30 91r36
+30E9*Op_Kind 30e33 34r14
+30n21*Put{30E9} 34r26 6|66r44 73r19 101r43 106r19
+30n26*Delete{30E9} 6|66r59 101r52
+32R9*Log_Record 37e14 39r26 42r41 6|61r26 85r41
+33m7*Seq{4|72M9} 6|65r30 100m9
+34e7*Kind{30E9} 6|66r31 73r12 101m9 106r12
+35r7*K{4|44R9} 6|67r31 70r23 71r35 102m9 104m12
+36r7*V{4|49R9} 6|68r35 69r35 74r26 75r40 107m12 109m15
+39U14*Encode 39>22 39<38 6|61b14 79l8 79t14
+39r22 R{32R9} 6|61b22 65r28 66r29 67r29 68r33 69r33 70r21 71r33 73r10 74r24
+. 75r38
+39a38 B{4|25A12} 6|61b38 63m7 64m16 65m16 66m7 67m7 68m7 69m7 71m10 75m13
+. 78m16 78r33
+42U14*Decode 42>22 42<33 42<53 6|85b14 113l8 113t14
+42a22 B{4|25A12} 6|85b22 86r41 87r41 87r72 91r19 94r10 97r19 97r39 100r26
+. 101r21 104r27 109r30
+42r33 R{32R9} 6|85b33 89m7 100m7 101m7 102m7 104m10 106r10 107m10 109m13
+42b53 Valid{boolean} 6|85b53 90m7 112m7
+X 6 legder-record_format.adb
+3N4 Off_Magic 64r19 91r22
+4N4 Off_Seq 65r19 100r29
+5N4 Off_Kind 66r10 94r13 101r24
+6N4 Off_KLen 67r10 86r44
+7N4 Off_VLen 68r10 69r10 87r44 87r75
+8N4 Off_Key 71r13 104r30
+9N4 Off_Value 75r16 109r33
+10N4 Off_CRC 78r19 78r41 97r22 97r47
+12U14 Put_U32 12=23 12>41 12>64 21b14 28l8 28t15 64s7 78s7
+12a23 B{4|25A12} 21b23 25m10
+12i41 At_Off{4|24I12} 13r18 21b41 25r13
+12m64 V{4|82M9} 21b64 22r20
+14V13 Get_U32{4|82M9} 14>22 14>33 30b13 37l8 37t15 91s10 97s10
+14a22 B{4|25A12} 30b22 34r32
+14i33 At_Off{4|24I12} 15r18 30b33 34r35
+16U14 Put_U64 16=23 16>41 16>64 39b14 46l8 46t15 65s7
+16a23 B{4|25A12} 39b23 43m10
+16i41 At_Off{4|24I12} 17r18 39b41 43r13
+16m64 V{4|72M9} 39b64 40r23
+18V13 Get_U64{4|72M9} 18>22 18>33 48b13 55l8 55t15 100s17
+18a22 B{4|25A12} 48b22 52r35
+18i33 At_Off{4|24I12} 19r18 48b33 52r38
+22m7 X{4|82M9} 25r34 26m10 26r15
+24i11 I{integer} 25r22
+31m7 X{4|82M9} 34m10 34r15 36r14
+33i11 I{integer} 34r44
+40m7 X{4|72M9} 43r34 44m10 44r15
+42i11 I{integer} 43r22
+49m7 X{4|72M9} 52m10 52r15 54r14
+51i11 I{integer} 52r47
+70i11 I{integer} 71r23 71r44
+74i14 I{integer} 75r28 75r49
+86i7 KL{natural} 94r35 102r21 103r21
+87i7 VL{natural} 94r56 107r24 108r24
+103i11 I{integer} 104r21 104r40
+108i14 I{integer} 109r24 109r45
+

@@ -1,0 +1,76 @@
+V "GNAT Lib v16"
+A -O1
+A -gnatA
+A -gnat2022
+A -gnata
+A -gnatwa
+A -gnatwe
+A -gnatVa
+A -gnatyg
+A -gnatyM100
+A -g
+A -fstack-check=specific
+A -mtune=generic
+A -march=x86-64
+P ZX
+
+RN
+RV NO_IMPLEMENTATION_ASPECT_SPECIFICATIONS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+
+U legder.ram_device%b	legder-ram_device.adb	083f6845 OO PK
+W legder%s		legder.adb		legder.ali
+
+U legder.ram_device%s	legder-ram_device.ads	0808214f EE NE OO PK
+W legder%s		legder.adb		legder.ali
+
+D legder.ads		20261008051144 7c712432 legder%s
+D legder-ram_device.ads	20261008044746 7479057d legder.ram_device%s
+D legder-ram_device.adb	20261008044746 7c466d38 legder.ram_device%b
+D system.ads		20260430083320 898beeee system%s
+G a e
+G c Z s b [read legder__ram_device 17 14 none]
+G c Z s b [write legder__ram_device 18 14 none]
+G c Z s b [sync legder__ram_device 19 14 none]
+G c Z s b [erase legder__ram_device 21 14 none]
+G c Z s b [tear_next_write legder__ram_device 24 14 none]
+G c Z s b [drop_unsynced legder__ram_device 25 14 none]
+G c Z s b [writes legder__ram_device 27 13 none]
+G c Z s b [syncs legder__ram_device 28 13 none]
+X 1 legder.ads
+9K9*Legder 90e11 2|13r9 30r5 3|1r14 85r5
+15M9*Byte 3|36r28
+17A9*Byte_Array(15M9)<integer>
+19N4*Block_Size 3|35r22 35r40
+25A12*Block{17A9}<integer> 2|17r53 18r49 3|4r34 13r52 24r49 33r20
+30I9*Block_Index<short_integer> 2|15r27 17r29 18r29 3|3r19 13r28 24r29
+X 2 legder-ram_device.ads
+13K16*RAM_Device 1|9k9 2|30l12 30e22 3|1b21 85l12 85t22
+15i4*Block_Count{1|30I9} 3|3r42 15r18 26r18
+17U14*Read 17>21 17<42 3|13b14 22l8 22t12
+17i21 Index{1|30I9} 3|13b20 15r10 17r20 18r27 20r27
+17a42 Data{1|25A12} 3|13b41 16m10 18m10 20m10
+18U14*Write 18>21 18>42 3|24b14 44l8 44t13
+18i21 Index{1|30I9} 3|24b21 26r10 38r22 41r19 43r14
+18a42 Data{1|25A12} 3|24b42 33r29 41r29
+19U14*Sync 3|46b14 55l8 55t12
+21U14*Erase 3|57b14 65l8 65t13
+24U14*Tear_Next_Write 3|67b14 70l8 70t23
+25U14*Drop_Unsynced 3|72b14 80l8 80t21
+27V13*Writes{natural} 3|82b13
+28V13*Syncs{natural} 3|83b13
+X 3 legder-ram_device.adb
+3I12 Idx{1|30I9} 4r26 8r23 49r16 74r16
+4A9 Blocks(1|25A12)<1|30I9> 6r16 7r16
+6a4 Durable{4A9} 20r18 51m13 59m7 60r18 76r28
+7a4 Pending{4A9} 18r18 38m13 41m10 51r28 60m7 76m13
+8a4 Dirty(boolean) 17r13 43m7 50r13 52m13 61m7 75r13 77m13
+9b4 Tear{boolean} 30r10 31m10 62m7 69m7
+10i4 N_Writes{natural} 29m7 29r19 63m7 82r39
+11i4 N_Syncs{natural} 48m7 48r18 64m7 83r39
+33a13 Torn{1|25A12} 36m16 38r32
+35i17 I{integer} 36r22 36r35
+49i11 I{3I12} 50r20 51r22 51r37 52r20
+74i11 I{3I12} 75r20 76r22 76r37 77r20
+
