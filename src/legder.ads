@@ -1,0 +1,90 @@
+--  legder: a crash-safe transactional storage engine you can prove
+--  correct. Fixed block device underneath, write-ahead log on top,
+--  bounded key-value store as the API.
+--
+--  Root package: the fundamental types. No access types, no heap.
+--  Sizes are compile-time constants so that every buffer is a plain
+--  array and every bound is provable.
+
+package Legder with SPARK_Mode, Pure is
+
+   ---------------------------------------------------------------------
+   --  Bytes and blocks
+   ---------------------------------------------------------------------
+
+   type Byte is mod 2 ** 8 with Size => 8;
+
+   type Byte_Array is array (Natural range <>) of Byte with Pack;
+
+   Block_Size : constant := 512;
+   --  One device block. 512 matches SD cards and most flash pages'
+   --  smallest write unit. A record never spans a block: a partial
+   --  write of a block corrupts at most one record.
+
+   subtype Block_Offset is Natural range 0 .. Block_Size - 1;
+   subtype Block is Byte_Array (Block_Offset);
+
+   Max_Blocks : constant := 4096;
+   --  2 MiB at 512 bytes. Bounded on purpose: the device is an array.
+
+   type Block_Index is range 0 .. Max_Blocks - 1;
+
+   ---------------------------------------------------------------------
+   --  Keys and values
+   ---------------------------------------------------------------------
+
+   Max_Key   : constant := 32;
+   Max_Value : constant := 256;
+   --  Together with the record header they fit one block with room
+   --  to spare. See Legder.Record_Format for the exact budget.
+
+   subtype Key_Length   is Natural range 0 .. Max_Key;
+   subtype Value_Length is Natural range 0 .. Max_Value;
+
+   type Key is record
+      Length : Key_Length := 0;
+      Bytes  : Byte_Array (1 .. Max_Key) := [others => 0];
+   end record;
+
+   type Value is record
+      Length : Value_Length := 0;
+      Bytes  : Byte_Array (1 .. Max_Value) := [others => 0];
+   end record;
+
+   function "=" (L, R : Key) return Boolean is
+     (L.Length = R.Length
+      and then (for all I in 1 .. L.Length => L.Bytes (I) = R.Bytes (I)));
+   --  Keys compare on their live bytes only; padding is ignored.
+
+   function "<" (L, R : Key) return Boolean
+     with Global => null;
+   --  True if L sorts before R. Compares bytes in order; if one key is a
+   --  prefix of the other, the shorter one comes first.
+
+   function Same (L, R : Value) return Boolean is
+     (L.Length = R.Length
+      and then (for all I in 1 .. L.Length => L.Bytes (I) = R.Bytes (I)));
+
+   ---------------------------------------------------------------------
+   --  Sequence numbers
+   ---------------------------------------------------------------------
+
+   type Sequence is mod 2 ** 64;
+   --  Every committed record carries the next sequence number. Two
+   --  records are adjacent in the log if and only if their sequences
+   --  are consecutive. That is what makes torn and stale blocks
+   --  detectable: recovery stops at the first gap.
+
+   ---------------------------------------------------------------------
+   --  Checksums
+   ---------------------------------------------------------------------
+
+   type CRC32 is mod 2 ** 32;
+
+   function CRC (Data : Byte_Array) return CRC32
+     with Global => null;
+   --  CRC-32 (IEEE 802.3, reflected, init and final xor 16#FFFFFFFF#),
+   --  the one zlib and PNG use. Implemented in the body, table-free,
+   --  so it is provable and small.
+
+end Legder;

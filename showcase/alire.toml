@@ -1,0 +1,16 @@
+name = "legder_showcase"
+description = "legder acceptance test: write, crash, recover"
+version = "0.1.0-dev"
+authors = ["Olivier Henley"]
+maintainers = ["Olivier Henley <henley@adacore.com>"]
+maintainers-logins = ["ohenley"]
+licenses = "Apache-2.0"
+
+executables = ["showcase"]
+project-files = ["legder_showcase.gpr"]
+
+[[depends-on]]
+legder = "*"
+
+[[pins]]
+legder = { path = ".." }

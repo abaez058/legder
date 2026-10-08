@@ -1,0 +1,11 @@
+name = "legder"
+description = "Crash-safe transactional storage engine on a fixed block device"
+version = "0.1.0-dev"
+authors = ["Olivier Henley"]
+maintainers = ["Olivier Henley <henley@adacore.com>"]
+maintainers-logins = ["ohenley"]
+licenses = "Apache-2.0"
+website = "https://github.com/GNAT-Academic-Program/legder"
+tags = ["storage", "database", "embedded", "spark", "gap"]
+
+project-files = ["legder.gpr"]
