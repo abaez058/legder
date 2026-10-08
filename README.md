@@ -1,102 +1,118 @@
-# legder
+# ledger-project-2026
 
-A crash-safe transactional storage engine you can prove correct.
-Fixed block device underneath, write-ahead log in the middle, a
-bounded key-value store on top. Ada/SPARK, no heap, no access types.
+A from-scratch database storage system built using **Ada** and **SPARK**.
 
-GNAT Academic Program capstone project. Proposal title: *Legder:
-Embedded Transactional Storage Engine*.
+## Current learning milestone: one crash and one recovered record
 
-## What it is
+The runnable starter uses a temporary one-record WAL/storage demo. The team's
+real WAL and storage components are not implemented yet. The original broader
+project goals below describe the intended system, not completed features.
 
-Every embedded product that keeps settings, counters or logs across
-power cycles has one of these, usually hand-rolled and usually wrong
-the first three times. The failure is always the same: power goes at
-the wrong moment and the device comes back with half a record.
+From PowerShell in the folder containing `alire.toml`:
 
-legder's claim is small and provable: **after any crash, what you read
-back is exactly the set of operations that had been acknowledged, in
-order, and nothing else.**
-
-The mechanism:
-
-- One record per device block. A block write is atomic or torn; a
-  torn block fails its CRC.
-- Every record carries the next sequence number. Recovery reads
-  blocks in order and stops at the first block that is not a valid
-  record with sequence = previous + 1.
-- Put and Delete write the record and sync *before* touching the
-  in-memory table. The table is always a replay of the log.
-
-## What is in the seed
-
-```
-src/legder.ads                Byte, Block, Key, Value, Sequence, CRC          done
-src/legder-record_format.ads  the on-disk record, Encode/Decode with CRC     done
-src/legder-log.ads            generic WAL: Open (recover), Append, Scan      done
-src/legder-store.ads          generic KV store on the log                    done, PLACEHOLDER index
-src/legder-ram_device.ads     in-memory device with crash injection          done
-showcase/                     write, tear a block, recover, check            acceptance test
-tests/                        30 checks incl. CRC vectors and crash cases    extend as you go
+```powershell
+alr build
+alr exec -- powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\crash_recovery.ps1
 ```
 
-Everything compiles, the crash tests pass, and recovery works. What is
-a placeholder is the store's index: a linear scan over a 256-entry
-array. Correct and slow. What is missing entirely is compaction: the
-log only grows, and when the device is full, Put fails.
+The test writes one record, forcibly kills Ledger after closing the WAL and
+before updating storage, restarts Ledger to replay, and checks the recovered
+storage against an independent expected value. It prints PASS/FAIL and keeps
+evidence in a new `test-output/` subfolder on every run.
 
-Read `ARCHITECTURE.md` before touching anything.
+Read [the first-test walkthrough](docs/crash-recovery-first-test.md) for the
+code explanation, Windows steps, limits, and teammate integration points.
+This is a process-crash demonstration, not a power-loss durability guarantee
+or a SPARK proof.
 
-## Milestones
+## Project Description
 
-1. **Prove the record format.** `Legder.Record_Format` under
-   `gnatprove --mode=all`: index safety (R2) and, if you can, the
-   round trip (R1). First real proof, small package.
-2. **A real device.** Implement Read/Write/Sync over a file on the
-   desktop, then over SD or flash on a board. Run the showcase on it.
-   Pull the plug on a real board mid-write. Recover.
-3. **Compaction.** When the log is nearly full, write the live table
-   as a fresh sequence of records into a second region and switch.
-   This is where the crash-safety argument gets interesting: the
-   switch itself must be atomic.
-4. **A real index.** Replace the linear scan. Sorted array with binary
-   search is enough; a B-tree is a stretch. Do not change the commit
-   order while doing this.
-5. **Prove S1.** State the store's meaning as a ghost functional map
-   and prove Put, Delete and Open against it. The year's headline.
+This project implements a database storage engine centered around two fundamental concepts: a **write-ahead log (WAL)** and a **B-tree index**.
 
-## Build
+The write-ahead log records operations before they are applied, providing a foundation for durability and crash recovery. The B-tree provides indexed data storage and retrieval.
 
-Three [Alire](https://alire.ada.dev) crates; showcase and tests pin
-the library by path.
+A major focus of the project is **crash recovery and formal correctness**. The system will be intentionally interrupted at critical points and repeatedly tested to demonstrate that recovery produces the state required by a stated recovery guarantee.
 
+**SPARK** will be used to specify and verify important correctness properties, including the absence of runtime errors across the parsing and page-management core. Verification results will be reported honestly, including what was not proved and why.
+
+## Required Goals
+
+The project is expected to provide:
+
+- A **write-ahead log (WAL)** with a stated durability guarantee.
+- A **B-tree index** built over the log.
+- B-tree operations for:
+  - Insert
+  - Lookup
+  - Delete
+  - Range scan
+- A **crash-injection harness** that can interrupt the engine at every persistent-state transition.
+- An **oracle** that verifies recovered data against the expected correct state.
+- **SPARK proofs** demonstrating the absence of runtime errors across the parsing and page-management core.
+- A **recovery-guarantee document** explaining:
+  - What survives a crash.
+  - What does not survive a crash.
+  - How the recovery guarantee is established.
+- A **verification report** documenting the proof results, including properties that could not be proved and why.
+  
+## Stretch Goals
+
+If the required goals are completed, additional work may include:
+
+- Concurrent readers alongside a single writer.
+- Checkpointing to bound recovery time.
+- Measuring recovery time against log length.
+- Documenting a significant SPARK proof obligation that initially failed and explaining what was changed to satisfy it.
+- Additional features proposed by the team.
+
+## Technologies
+
+- **Ada** — Primary programming language
+- **SPARK** — Formal specification and verification
+- **Alire** — Ada project and dependency management
+- **GitHub** — Version control and team collaboration
+  
+## Project Components
+
+### Write-Ahead Log
+
+Records operations before they are applied and provides the persistence mechanism required for crash recovery.
+
+### B-Tree
+
+Provides indexed storage and retrieval over the log, supporting insertion, lookup, deletion, and range scanning.
+
+### Crash Recovery
+
+Recovers the database after an interruption and verifies that the resulting state satisfies the project's recovery guarantee.
+
+### Crash-Injection Testing
+
+Intentionally interrupts the system at persistent-state transitions to test recovery behavior under failure conditions.
+
+### Formal Verification
+
+Uses SPARK to specify and verify critical properties of the implementation, with verification results documented rather than assumed.
+
+## Team
+
+| Member | Responsibility |
+| ------ | -------------- |
+| Rene Rodriguez    | Crash Testing & Recovery |
+| Ruth Velasquez    | Write-ahead log |
+| Andrew Baez    | B-tree / storage engine |
+| Annette Garcia    | SPARK / integration |
+
+## Project Structure
+
+```text
+src/       Main project source code
+tests/     Functional, recovery, and crash-injection tests
+docs/      Design, requirements, recovery, and verification documentation
 ```
-alr build                       # library
-cd showcase && alr build && alr run
-cd tests && alr build && ./bin/tests
-alr with gnatprove && alr exec -- gnatprove -P legder.gpr --mode=flow
-```
 
-Contracts are checked at runtime in every build (`-gnata`).
+## Status
 
-## Rules of the road
+**In Development**
 
-- Warnings are errors, style checks on, CI on every push.
-- `src/` is SPARK. Devices other than RAM live in `devices/<name>/`
-  and are the only place `SPARK_Mode => Off` is allowed.
-- Never write to the table before the log has synced. That is the
-  invariant. A change that breaks it is wrong however fast it is.
-- The fault model is: one block may be torn, writes before the last
-  Sync are durable, writes after it may vanish. A device that cannot
-  promise that is not a legder device; put a translation layer under it.
-
-See `CONTRIBUTING.md` for the fork workflow.
-
-## Contact
-
-Olivier Henley, GAP Coordinator, AdaCore. Weekly meeting, plus the
-project Discord.
-
-## License
-
-Apache-2.0. See `LICENSE`.
+The project is currently in the planning and design phase. Architecture, interfaces, implementation, formal verification, and crash-recovery testing will be developed incrementally throughout the project.
