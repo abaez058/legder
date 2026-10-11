@@ -48,9 +48,27 @@ at most one record, and that record fails its CRC. That single fact is
 what the whole crash argument rests on. Packing several records per
 block would need a second-level commit marker; not for v1.
 
-## Log
+## Write-Ahead Log (WAL)
 
-Blocks `0 .. Block_Count` in order. `Head` is the next free block.
+A write-ahead log is an ordered, append-only record of state-changing
+operations. "Write-ahead" means an operation is recorded and made durable
+before the store applies that operation to its in-memory key-value map. In
+this system, `Legder.Log` is the WAL: an Ada generic package parameterized by
+the device's `Read`, `Write`, and `Sync` procedures. Each log record occupies
+one block and contains the operation kind, key, value, sequence number, and
+CRC.
+
+The WAL is the source used to rebuild the store after restart. A successful
+append is the commit point: it returns success only after `Sync` returns.
+The store applies a `Put` or `Delete` only after that successful append. On
+reopen, the log scans and replays the committed records in order. This
+guarantee depends on the device honoring `Sync` by making prior writes
+durable; it is not a claim that every physical device or power-loss mode does
+so.
+
+### Append and recovery
+
+Blocks `0 .. Block_Count` are used in order. `Head` is the next free block.
 
 Commit: encode with `Seq = Last_Seq + 1`, write block `Head`, `Sync`,
 then advance. Recovery (`Open`): read from 0, accept a block only if
