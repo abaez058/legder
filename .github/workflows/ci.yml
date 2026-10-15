@@ -20,6 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: alire-project/setup-alire@v4
+        with:
+          # The action's default (alr 2.0.2) installs GNAT 14, whose macOS
+          # linker writes a duplicate LC_RPATH that current macOS refuses
+          # to load ("Abort trap: 6"). Pin the versions the team uses.
+          version: '2.1.1'
+          toolchain: 'gnat_native^16 gprbuild'
       - name: Build library
         run: alr -n build
       - name: Tests
