@@ -6,7 +6,17 @@ on:
 
 jobs:
   build-test-prove:
-    runs-on: ubuntu-latest
+    # The team develops on Windows and macOS; CI proves both, plus Linux.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        # Same shell everywhere (Git Bash on Windows), so cd, ./bin/tests
+        # and backslash line continuations behave the same on every OS.
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: alire-project/setup-alire@v4
