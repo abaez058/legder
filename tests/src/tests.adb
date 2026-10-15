@@ -169,6 +169,46 @@ procedure Tests is
       end;
    end Test_Store;
 
+
+   procedure Test_Store_Crash is
+      N       : Natural;
+      OK      : Boolean;
+      Got     : Value;
+      Found   : Boolean;
+      Crashed : Boolean := False;
+   begin
+      Dev.Erase;
+
+      --  Simulate a crash after the log record is durable.
+      begin
+         declare
+            S : KV.Store;
+         begin
+            KV.Open (S, N);
+            Dev.Crash_After_Next_Sync;
+            KV.Put (S, K ("crash"), V ("durable"), OK);
+         end;
+      exception
+         when Dev.Simulated_Crash =>
+            Crashed := True;
+      end;
+
+      Check ("crash interrupts put after sync", Crashed);
+
+      --  Opening a fresh store must replay the durable record.
+      declare
+         S : KV.Store;
+      begin
+         KV.Open (S, N);
+         Check ("crash recovery replays one committed record", N = 1);
+
+         KV.Get (S, K ("crash"), Got, Found);
+         Check
+           ("crash recovery preserves committed value",
+            Found and then Same (Got, V ("durable")));
+      end;
+   end Test_Store_Crash;
+
    procedure Test_Capacity is
       N  : Natural;
       OK : Boolean;
@@ -539,6 +579,7 @@ begin
    Test_Record;
    Test_Log;
    Test_Store;
+   Test_Store_Crash;
    Test_Capacity;
    Test_Key_Order;
    Test_Index;

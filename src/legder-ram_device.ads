@@ -12,7 +12,7 @@
 
 package Legder.RAM_Device with SPARK_Mode is
 
-   Block_Count : constant Block_Index := 255;  --  256 blocks, 128 KiB
+   Block_Count : constant Block_Index := 255;  -- 256 blocks, 128 KiB
 
    procedure Read  (Index : Block_Index; Data : out Block);
    procedure Write (Index : Block_Index; Data : Block);
@@ -23,6 +23,10 @@ package Legder.RAM_Device with SPARK_Mode is
 
    procedure Tear_Next_Write;
    procedure Drop_Unsynced;
+
+   --  Simulate a crash immediately after the next Sync completes.
+   Simulated_Crash : exception;
+   procedure Crash_After_Next_Sync;
 
    function Writes return Natural;
    function Syncs  return Natural;
