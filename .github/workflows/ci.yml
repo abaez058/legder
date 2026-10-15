@@ -44,5 +44,6 @@ jobs:
           alr -n exec -- gnatprove -P legder.gpr --mode=flow --checks-as-errors=on
       - name: SPARK proof (target 1, R2 absence of runtime errors in record format)
         run: |
-          alr -n exec -- gnatprove -P legder.gpr --mode=silver --level=1 -j0 \
+          # Prover limits (steps, not seconds) come from legder.gpr.
+          alr -n exec -- gnatprove -P legder.gpr --mode=silver \
             --checks-as-errors=on -u legder.adb -u legder-record_format.adb

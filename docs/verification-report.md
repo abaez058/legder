@@ -19,17 +19,27 @@ index, range conversion and arithmetic operation in these units is proved
 in bounds for every possible input, including a block of random bytes
 handed to `Decode`. This is R2 in the proof plan of `ARCHITECTURE.md`.
 
-**Result:** proved. 57 checks on a clean run, 0 unproved, no
-`pragma Annotate` justifications, no contract changes needed. (The
-summary says 79 when flow analysis ran first, because it also counts the
-flow checks of the other units.)
+**Result:** proved. 58 checks on a clean run, 0 unproved, no
+`pragma Annotate` justifications, no contract changes. (The summary says
+80 when flow analysis ran first, because it also counts the flow checks
+of the other units.) Proved on macOS, Windows and Linux in CI.
+
+One `pragma Assert` in `Decode` states that the key and value lengths are
+in range after the early returns. It adds a fact the code already checks;
+it does not weaken anything, and it is itself proved.
 
 ```sh
 alr -n with gnatprove   # once; adds gnatprove to alire.toml locally
 alr -n exec -- gnatprove -P legder.gpr --clean
-alr -n exec -- gnatprove -P legder.gpr --mode=silver --level=1 -j0 \
+alr -n exec -- gnatprove -P legder.gpr --mode=silver \
   --checks-as-errors=on -u legder.adb -u legder-record_format.adb
 ```
+
+**Same answer on every machine.** `legder.gpr` sets the prover limits
+(`--level=1 --timeout=0 --steps=2000`). Provers stop after a number of
+steps, not seconds, so a slow Windows runner and a fast Mac reach the
+same verdict. With the default one second limit, an early Windows CI run
+reported unproved checks in `Decode` that proved everywhere else.
 
 Run `--clean` first locally if you ran silver on the whole library
 before. Otherwise gnatprove keeps the old unproved results of other units
@@ -62,10 +72,10 @@ termination). Already enforced by CI.
 ## Silver on the whole library: baseline, not yet a target
 
 ```sh
-alr -n exec -- gnatprove -P legder.gpr --mode=silver --level=1 -j0
+alr -n exec -- gnatprove -P legder.gpr --mode=silver
 ```
 
-Result on 2026-10-14: 240 checks, 194 proved, 46 unproved.
+Result on 2026-10-15: 241 checks, 195 proved, 46 unproved.
 
 | Unit | Unproved | Kind |
 |---|---|---|

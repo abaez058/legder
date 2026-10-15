@@ -94,6 +94,9 @@ package body Legder.Record_Format with SPARK_Mode is
       if B (Off_Kind) > 1 or else KL > Max_Key or else VL > Max_Value then
          return;
       end if;
+      --  From here on the lengths are in range, so the copy loops below
+      --  stay inside the block and inside R.K.Bytes and R.V.Bytes.
+      pragma Assert (KL in Key_Length and then VL in Value_Length);
       if Get_U32 (B, Off_CRC) /= CRC (B (0 .. Off_CRC - 1)) then
          return;
       end if;
