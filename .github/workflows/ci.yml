@@ -6,10 +6,26 @@ on:
 
 jobs:
   build-test-prove:
-    runs-on: ubuntu-latest
+    # The team develops on Windows and macOS; CI proves both, plus Linux.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        # Same shell everywhere (Git Bash on Windows), so cd, ./bin/tests
+        # and backslash line continuations behave the same on every OS.
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: alire-project/setup-alire@v4
+        with:
+          # The action's default (alr 2.0.2) installs GNAT 14, whose macOS
+          # linker writes a duplicate LC_RPATH that current macOS refuses
+          # to load ("Abort trap: 6"). Pin the versions the team uses.
+          version: '2.1.1'
+          toolchain: 'gnat_native^16 gprbuild'
       - name: Build library
         run: alr -n build
       - name: Tests
@@ -26,3 +42,8 @@ jobs:
         run: |
           alr -n with gnatprove
           alr -n exec -- gnatprove -P legder.gpr --mode=flow --checks-as-errors=on
+      - name: SPARK proof (target 1, R2 absence of runtime errors in record format)
+        run: |
+          # Prover limits (steps, not seconds) come from legder.gpr.
+          alr -n exec -- gnatprove -P legder.gpr --mode=silver \
+            --checks-as-errors=on -u legder.adb -u legder-record_format.adb

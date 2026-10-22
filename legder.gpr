@@ -12,6 +12,9 @@ library project Legder is
          "-gnatyg", "-gnatyM100", "-g", "-O1", "-fstack-check");
    end Compiler;
    package Prove is
-      for Proof_Switches ("Ada") use ("--level=1", "-j0");
+      --  Bound the provers by steps, not seconds, so a proof gives the
+      --  same answer on a fast Mac and a slow Windows CI runner.
+      for Proof_Switches ("Ada") use
+        ("--level=1", "--timeout=0", "--steps=2000", "-j0");
    end Prove;
 end Legder;
