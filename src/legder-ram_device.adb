@@ -51,10 +51,16 @@ package body Legder.RAM_Device with SPARK_Mode is
    end Write;
 
    procedure Sync is
+      --  Remember which crash points were requested.
+      Crash_Before : constant Boolean := Crash_Before_Sync_Flag;
+      Crash_After  : constant Boolean := Crash_On_Next_Sync;
    begin
-      --  Simulate power loss before pending writes become durable.
-      if Crash_Before_Sync_Flag then
-         Crash_Before_Sync_Flag := False;
+      --  Consume both one-shot crash flags.
+      Crash_Before_Sync_Flag := False;
+      Crash_On_Next_Sync := False;
+
+      --  Crash before pending writes become durable.
+      if Crash_Before then
          Drop_Unsynced;
          raise Simulated_Crash;
       end if;
@@ -68,9 +74,8 @@ package body Legder.RAM_Device with SPARK_Mode is
          end if;
       end loop;
 
-      --  Simulate a crash after the write becomes durable.
-      if Crash_On_Next_Sync then
-         Crash_On_Next_Sync := False;
+      --  Crash after writes become durable.
+      if Crash_After then
          raise Simulated_Crash;
       end if;
    end Sync;
