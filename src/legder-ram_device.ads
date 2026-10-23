@@ -27,6 +27,7 @@ package Legder.RAM_Device with SPARK_Mode is
    --  Simulate a crash immediately after the next Sync completes.
    Simulated_Crash : exception;
    procedure Crash_After_Next_Sync;
+   procedure Crash_Before_Next_Sync;
 
    function Writes return Natural;
    function Syncs  return Natural;

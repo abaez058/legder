@@ -9,7 +9,8 @@ package body Legder.RAM_Device with SPARK_Mode is
    Tear      : Boolean := False;
    N_Writes  : Natural := 0;
    N_Syncs   : Natural := 0;
-   Crash_On_Next_Sync : Boolean := False;
+   Crash_On_Next_Sync     : Boolean := False;
+   Crash_Before_Sync_Flag : Boolean := False;
 
    procedure Read (Index : Block_Index; Data : out Block) is
    begin
@@ -51,6 +52,13 @@ package body Legder.RAM_Device with SPARK_Mode is
 
    procedure Sync is
    begin
+      --  Simulate power loss before pending writes become durable.
+      if Crash_Before_Sync_Flag then
+         Crash_Before_Sync_Flag := False;
+         Drop_Unsynced;
+         raise Simulated_Crash;
+      end if;
+
       N_Syncs := N_Syncs + 1;
 
       for I in Idx loop
@@ -60,7 +68,7 @@ package body Legder.RAM_Device with SPARK_Mode is
          end if;
       end loop;
 
-      --  Crash only after all pending writes become durable.
+      --  Simulate a crash after the write becomes durable.
       if Crash_On_Next_Sync then
          Crash_On_Next_Sync := False;
          raise Simulated_Crash;
@@ -74,6 +82,7 @@ package body Legder.RAM_Device with SPARK_Mode is
       Dirty := [others => False];
       Tear := False;
       Crash_On_Next_Sync := False;
+      Crash_Before_Sync_Flag := False;
       N_Writes := 0;
       N_Syncs := 0;
    end Erase;
@@ -98,6 +107,10 @@ package body Legder.RAM_Device with SPARK_Mode is
       Crash_On_Next_Sync := True;
    end Crash_After_Next_Sync;
 
+   procedure Crash_Before_Next_Sync is
+   begin
+      Crash_Before_Sync_Flag := True;
+   end Crash_Before_Next_Sync;
    function Writes return Natural is (N_Writes);
    function Syncs  return Natural is (N_Syncs);
 
