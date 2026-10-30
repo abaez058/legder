@@ -61,10 +61,16 @@ package body Legder.RAM_Device with SPARK_Mode is
       end loop;
 
       --  Crash only after all pending writes become durable.
-      if Crash_On_Next_Sync then
+      --  Clear the flag on the normal path, before raising, so the
+      --  write is visible to flow analysis.
+      declare
+         Crash : constant Boolean := Crash_On_Next_Sync;
+      begin
          Crash_On_Next_Sync := False;
-         raise Simulated_Crash;
-      end if;
+         if Crash then
+            raise Simulated_Crash;
+         end if;
+      end;
    end Sync;
 
    procedure Erase is
