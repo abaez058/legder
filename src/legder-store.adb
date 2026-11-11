@@ -21,12 +21,12 @@ package body Legder.Store with SPARK_Mode is
                   Ok       : Boolean;
                begin
                   Legder.Index.Insert (S.Idx, R.K, New_Slot, Ok);
-                  if Ok then
-                     S.Values (New_Slot) := R.V;
+
+                  if not Ok then
+                     raise Program_Error with "Index insertion failed during Apply";
                   end if;
-                  --  not Ok: index full during replay. Cannot happen
-                  --  if Put refused the key when it was first written
-                  --  (S3), unless Max_Entries shrank between runs.
+
+                  S.Values (New_Slot) := R.V;
                end;
             end if;
          when Delete =>
@@ -35,6 +35,10 @@ package body Legder.Store with SPARK_Mode is
                   Removed : Boolean;
                begin
                   Legder.Index.Remove (S.Idx, R.K, Removed);
+
+                  if not Removed then
+                     raise Program_Error with "Index removal failed during Apply";
+                  end if;
                end;
             end if;
       end case;

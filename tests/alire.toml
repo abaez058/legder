@@ -14,3 +14,6 @@ legder = "*"
 
 [[pins]]
 legder = { path = ".." }
+
+[[depends-on]]
+gnatprove = "^16.1.0"

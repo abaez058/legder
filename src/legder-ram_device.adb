@@ -9,6 +9,8 @@ package body Legder.RAM_Device with SPARK_Mode is
    Tear      : Boolean := False;
    N_Writes  : Natural := 0;
    N_Syncs   : Natural := 0;
+   Crash_On_Next_Sync     : Boolean := False;
+   Crash_Before_Sync_Flag : Boolean := False;
 
    procedure Read (Index : Block_Index; Data : out Block) is
    begin
@@ -26,32 +28,60 @@ package body Legder.RAM_Device with SPARK_Mode is
       if Index > Block_Count then
          return;
       end if;
-      N_Writes := N_Writes + 1;
+
+      if N_Writes < Natural'Last then
+         N_Writes := N_Writes + 1;
+      end if;
+
       if Tear then
          Tear := False;
+
          declare
             Torn : Block := Data;
          begin
             for I in Block_Size / 2 .. Block_Size - 1 loop
                Torn (I) := Byte ((I * 7 + 13) mod 256);
             end loop;
+
             Pending (Index) := Torn;
          end;
       else
          Pending (Index) := Data;
       end if;
+
       Dirty (Index) := True;
    end Write;
 
    procedure Sync is
+      --  Remember which crash points were requested.
+      Crash_Before : constant Boolean := Crash_Before_Sync_Flag;
+      Crash_After  : constant Boolean := Crash_On_Next_Sync;
    begin
-      N_Syncs := N_Syncs + 1;
+      --  Consume both one-shot crash flags.
+      Crash_Before_Sync_Flag := False;
+      Crash_On_Next_Sync := False;
+
+      --  Crash before pending writes become durable.
+      if Crash_Before then
+         Drop_Unsynced;
+         raise Simulated_Crash;
+      end if;
+
+      if N_Syncs < Natural'Last then
+         N_Syncs := N_Syncs + 1;
+      end if;
+
       for I in Idx loop
          if Dirty (I) then
             Durable (I) := Pending (I);
             Dirty (I) := False;
          end if;
       end loop;
+
+      --  Crash after writes become durable.
+      if Crash_After then
+         raise Simulated_Crash;
+      end if;
    end Sync;
 
    procedure Erase is
@@ -60,6 +90,8 @@ package body Legder.RAM_Device with SPARK_Mode is
       Pending := Durable;
       Dirty := [others => False];
       Tear := False;
+      Crash_On_Next_Sync := False;
+      Crash_Before_Sync_Flag := False;
       N_Writes := 0;
       N_Syncs := 0;
    end Erase;
@@ -79,6 +111,15 @@ package body Legder.RAM_Device with SPARK_Mode is
       end loop;
    end Drop_Unsynced;
 
+   procedure Crash_After_Next_Sync is
+   begin
+      Crash_On_Next_Sync := True;
+   end Crash_After_Next_Sync;
+
+   procedure Crash_Before_Next_Sync is
+   begin
+      Crash_Before_Sync_Flag := True;
+   end Crash_Before_Next_Sync;
    function Writes return Natural is (N_Writes);
    function Syncs  return Natural is (N_Syncs);
 

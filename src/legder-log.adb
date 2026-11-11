@@ -51,19 +51,26 @@ package body Legder.Log with SPARK_Mode is
    ----------
 
    procedure Scan (S : State) is
-      B     : Block;
-      R     : Log_Record;
-      Valid : Boolean;
+      B              : Block;
+      R              : Log_Record;
+      Valid          : Boolean;
+      Expected_Seq   : Sequence := 1;
    begin
       for P in 0 .. S.Head - 1 loop
          Read (Block_Index (P), B);
          Decode (B, R, Valid);
-         --  Open established every block below Head is valid and
-         --  consecutive. A False here means the device changed under
-         --  us; stop rather than replay garbage.
-         exit when not Valid;
+
+         if not Valid or else R.Seq /= Expected_Seq then
+            raise Program_Error with "Log changed during Scan";
+         end if;
+
          Visit (R);
+         Expected_Seq := Expected_Seq + 1;
       end loop;
+
+      if Expected_Seq - 1 /= S.Last_Seq then
+         raise Program_Error with "Log sequence mismatch";
+      end if;
    end Scan;
 
 end Legder.Log;
