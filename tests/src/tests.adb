@@ -287,6 +287,80 @@ procedure Tests is
       end;
    end Test_Store_Crash_Before_Sync;
 
+
+   procedure Test_Store_Crash_Sequence is
+      N       : Natural;
+      OK      : Boolean;
+      Got     : Value;
+      Found   : Boolean;
+      Crashed : Boolean := False;
+   begin
+      Dev.Erase;
+
+      --  Build a history of five committed operations.
+      declare
+         S : KV.Store;
+      begin
+         KV.Open (S, N);
+
+         KV.Put (S, K ("alpha"), V ("1"), OK);
+         Check ("sequence: first put committed", OK);
+
+         KV.Put (S, K ("beta"), V ("2"), OK);
+         Check ("sequence: second put committed", OK);
+
+         KV.Put (S, K ("alpha"), V ("3"), OK);
+         Check ("sequence: overwrite committed", OK);
+
+         KV.Delete (S, K ("beta"), OK);
+         Check ("sequence: delete committed", OK);
+
+         KV.Put (S, K ("gamma"), V ("4"), OK);
+         Check ("sequence: final put committed", OK);
+
+         --  The sixth operation crashes before Sync.
+         Dev.Crash_Before_Next_Sync;
+
+         begin
+            KV.Put (S, K ("pending"), V ("lost"), OK);
+         exception
+            when Dev.Simulated_Crash =>
+               Crashed := True;
+         end;
+      end;
+
+      Check ("sequence: simulated crash occurred", Crashed);
+
+      --  Rebuild the store from the durable WAL.
+      declare
+         S : KV.Store;
+      begin
+         KV.Open (S, N);
+
+         Check ("sequence: five records replayed", N = 5);
+
+         KV.Get (S, K ("alpha"), Got, Found);
+         Check
+           ("sequence: latest value recovered",
+            Found and then Same (Got, V ("3")));
+
+         KV.Get (S, K ("beta"), Got, Found);
+         Check ("sequence: deletion preserved", not Found);
+
+         KV.Get (S, K ("gamma"), Got, Found);
+         Check
+           ("sequence: last committed value recovered",
+            Found and then Same (Got, V ("4")));
+
+         KV.Get (S, K ("pending"), Got, Found);
+         Check ("sequence: unsynced value absent", not Found);
+
+         Check ("sequence: correct live key count",
+                KV.Count (S) = 2);
+      end;
+   end Test_Store_Crash_Sequence;
+
+
    procedure Test_Capacity is
       N  : Natural;
       OK : Boolean;
@@ -1184,6 +1258,7 @@ begin
    Begin_Group ("6. Hand-picked crashes");
    Test_Store_Crash;
    Test_Store_Crash_Before_Sync;
+   Test_Store_Crash_Sequence;
    End_Group;
 
    Begin_Group ("7. Store against an independent model");
