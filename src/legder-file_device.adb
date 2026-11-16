@@ -5,6 +5,7 @@ with Ada.Strings.Unbounded;
 package body Legder.File_Device is
 
    package Block_IO is new Ada.Direct_IO (Legder.Block);
+   use type Block_IO.Count;
    use Ada.Strings.Unbounded;
 
    File      : Block_IO.File_Type;
