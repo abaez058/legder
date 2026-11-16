@@ -1,5 +1,3 @@
-with Legder;
-
 package Legder.File_Device with SPARK_Mode => Off is
 
    Block_Count : constant Legder.Block_Index := 255;
