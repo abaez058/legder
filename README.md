@@ -2,28 +2,23 @@
 
 A from-scratch database storage system built using **Ada** and **SPARK**.
 
-## Current learning milestone: one crash and one recovered record
+## WAL process-restart check
 
-The runnable starter uses a temporary one-record WAL/storage demo. The team's
-real WAL and storage components are not implemented yet. The original broader
-project goals below describe the intended system, not completed features.
+The Ada WAL and bounded store are implemented. `Legder.File_Device` stores
+fixed-size blocks in a binary file, while `Legder.RAM_Device` remains the
+fault-injection device used by the unit tests.
 
-From PowerShell in the folder containing `alire.toml`:
+From PowerShell at the repository root, run:
 
 ```powershell
-alr build
-alr exec -- powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\crash_recovery.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\crash_recovery.ps1
 ```
 
-The test writes one record, forcibly kills Ledger after closing the WAL and
-before updating storage, restarts Ledger to replay, and checks the recovered
-storage against an independent expected value. It prints PASS/FAIL and keeps
-evidence in a new `test-output/` subfolder on every run.
-
-Read [the first-test walkthrough](docs/crash-recovery-first-test.md) for the
-code explanation, Windows steps, limits, and teammate integration points.
-This is a process-crash demonstration, not a power-loss durability guarantee
-or a SPARK proof.
+The script builds the showcase with Alire, starts one process to append and
+sync a key/value record, then starts a second process to reopen the file-backed
+WAL and verify that replay recovered the value. The temporary WAL file is
+removed after the check. The test verifies process-restart persistence; it is
+not a sudden-power-loss durability guarantee or a SPARK proof of file I/O.
 
 ## Project Description
 
@@ -113,6 +108,7 @@ docs/      Design, requirements, recovery, and verification documentation
 
 ## Status
 
-**In Development**
-
-The project is currently in the planning and design phase. Architecture, interfaces, implementation, formal verification, and crash-recovery testing will be developed incrementally throughout the project.
+The WAL, record format, bounded store, RAM fault-injection device, and unit
+tests are implemented. The file device and process-restart showcase cover
+host-file persistence. Compaction, physical-device durability guarantees,
+and complete SPARK proofs remain future work.

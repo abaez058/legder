@@ -1,5 +1,10 @@
 # Architecture
 
+This document describes the intended reusable Ada storage-engine design.
+The current runnable learning milestone is a temporary one-record
+WAL/storage demo; its process-crash test is not evidence of power-loss
+durability or a SPARK proof of the full design.
+
 ## Layers
 
 ```
@@ -14,7 +19,7 @@ Legder.Record_Format  one block <-> one record, CRC           pure
 Legder              Byte, Block, Key, Value, Sequence, CRC    pure
      |
 device              Read (Index, out Block) / Write (Index, Block) / Sync
-                    Legder.RAM_Device in the seed; file, SD, flash are milestones
+                    Legder.RAM_Device for tests; Legder.File_Device for host files
 ```
 
 The device is three generic formal subprograms, not a tagged type.
@@ -107,6 +112,11 @@ fault model the log promises to survive, and nothing more. A real
 device is expected to behave at least this well; if it does not (flash
 without a write-complete guarantee, an SD card that lies about sync),
 a translation layer underneath is the fix, not a weaker log.
+
+`Legder.File_Device` provides the same block interface using Ada direct
+file I/O, so a separate process can reopen and replay the WAL. Its `Sync`
+closes and reopens the file to flush Ada's file handling; this is a
+process-restart test, not an operating-system `fsync` or power-loss guarantee.
 
 ## Proof plan
 
