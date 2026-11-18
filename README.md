@@ -1,6 +1,6 @@
 # ledger-project-2026
 
-A from-scratch database storage system built using **Ada** and **SPARK**.
+An educational database storage engine built using Ada and SPARK, based on the Apache 2.0-licensed GNAT Academic Program Ledger starter project and extended by FIU Capstone Team B.
 
 ## WAL process-restart check
 
@@ -112,3 +112,67 @@ The WAL, record format, bounded store, RAM fault-injection device, and unit
 tests are implemented. The file device and process-restart showcase cover
 host-file persistence. Compaction, physical-device durability guarantees,
 and complete SPARK proofs remain future work.
+
+## Attribution and Licensing
+
+This project builds on the [GNAT Academic Program Ledger starter project](https://github.com/GNAT-Academic-Program/legder), originally developed by AdaCore and its contributors under the Apache License, Version 2.0.
+
+FIU Capstone Team B extended the project through work on the write-ahead log, B-tree storage, crash-recovery testing, and SPARK verification.
+
+The complete Apache 2.0 license is provided in [LICENSE](LICENSE). Original project attribution is preserved in [NOTICE](NOTICE).
+
+### Development Tools
+
+- **Ada / GNAT:** Programming language and compiler.
+- **SPARK / GNATprove:** Formal verification and static analysis.
+- **Alire:** Dependency management and project builds.
+- **Git / GitHub:** Version control and collaboration.
+- **GitHub Actions:** Automated builds, testing, and verification checks.
+
+These tools are credited for their development roles; their licenses and terms remain separate from the Ledger project's license.
+
+## AI Assistance Disclosure
+
+Codex was used by a team member to assist with learning Ada, debugging, understanding compiler errors, and preparing documentation.
+
+AI-generated suggestions were reviewed and tested before use. Some suggestions required corrections following errors.
+
+## Showcase Demonstration
+
+The demonstration uses fictional keys and values rather than real personal information.
+
+### Automated Tests
+
+From the `tests` directory, run:
+
+```text
+alr run
+```
+
+This builds and executes the project's automated tests, including tests for record formatting, B-tree operations, WAL behavior, and crash recovery.
+
+### Process-Restart Recovery
+
+From the repository root, run:
+
+```text
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\crash_recovery.ps1
+```
+
+This demonstration checks that a synchronized record can be recovered after restarting the Ledger process.
+
+### Limitations
+
+Ledger is an educational prototype and is not presented as a production-ready database.
+
+The RAM-device crash tests simulate selected failure points. The file-backed process-restart test does not establish durability against sudden physical power loss.
+
+SPARK verification applies to specific analyzed properties and should not be interpreted as proof that every part of the system is correct.
+
+Additional security, privacy, and hardware-level validation would be required before production use.
+
+## Showcase Accessibility
+
+The team will provide readable text labels for demonstration results and explain the outcomes verbally. Any recorded demonstration intended for public presentation should include captions or an equivalent text transcript.
+
+Important information will not be communicated using color alone.
