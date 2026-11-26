@@ -165,6 +165,77 @@ procedure Tests is
       Check ("stale valid block with wrong seq stops recovery", N = 4);
    end Test_Log;
 
+   procedure Test_Log_Replay is
+      S : L.State;
+      N : Natural;
+      OK : Boolean;
+      Seen : Natural := 0;
+      Records : array (1 .. 3) of Log_Record;
+      procedure Visit (R : Log_Record) is
+      begin
+         Seen := Seen + 1;
+         if Seen <= Records'Last then
+            Records (Seen) := R;
+         end if;
+      end Visit;
+      procedure Replay is new L.Replay (Visit);
+   begin
+      Dev.Erase;
+      L.Open (S, N);
+      Replay (S);
+      Check ("replay: empty log makes no callbacks", Seen = 0);
+
+      L.Append (S, Put, K ("a"), V ("first"), OK);
+      Check ("replay: first append succeeds", OK);
+      L.Open (S, N);
+      Replay (S);
+      Check ("replay: recovery requests one complete record",
+             N = 1 and then Seen = 1
+             and then Records (1).Seq = 1
+             and then Records (1).Kind = Put
+             and then Records (1).K = K ("a")
+             and then Same (Records (1).V, V ("first")));
+
+      L.Append (S, Put, K ("a"), V ("updated"), OK);
+      Check ("replay: update append succeeds", OK);
+      L.Append (S, Delete, K ("a"), V (""), OK);
+      Check ("replay: delete append succeeds", OK);
+      Dev.Tear_Next_Write;
+      L.Append (S, Put, K ("torn"), V ("ignored"), OK);
+      L.Open (S, N);
+      Seen := 0;
+      Replay (S);
+      Check ("replay: visits only the recovered prefix", N = 3 and then Seen = 3);
+      Check ("replay: update and delete retain operation order",
+             Records (1).Seq = 1 and then Records (2).Seq = 2
+             and then Records (3).Seq = 3
+             and then Records (1).Kind = Put
+             and then Same (Records (1).V, V ("first"))
+             and then Records (2).Kind = Put
+             and then Records (2).K = K ("a")
+             and then Same (Records (2).V, V ("updated"))
+             and then Records (3).Kind = Delete
+             and then Records (3).K = K ("a"));
+
+      declare
+         B : Block;
+         Rejected : Boolean := False;
+      begin
+         Dev.Read (0, B);
+         B (100) := B (100) xor 1;
+         Dev.Write (0, B);
+         Dev.Sync;
+         Seen := 0;
+         begin
+            Replay (S);
+         exception
+            when Program_Error => Rejected := True;
+         end;
+         Check ("replay: changed record raises before visiting it",
+                Rejected and then Seen = 0);
+      end;
+   end Test_Log_Replay;
+
    procedure Test_Store is
       N  : Natural;
       OK : Boolean;
@@ -1246,6 +1317,7 @@ begin
 
    Begin_Group ("4. Log");
    Test_Log;
+   Test_Log_Replay;
    Test_Log_Edges;
    End_Group;
 

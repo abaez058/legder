@@ -54,7 +54,7 @@ package body Legder.Store with SPARK_Mode is
       begin
          Apply (S, R);
       end Visit;
-      procedure Replay_All is new L.Scan (Visit);
+      procedure Replay_All is new L.Replay (Visit);
    begin
       Legder.Index.Clear (S.Idx);
       S.Values := [others => <>];

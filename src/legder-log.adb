@@ -47,10 +47,10 @@ package body Legder.Log with SPARK_Mode is
    end Append;
 
    ----------
-   -- Scan --
+   -- Replay --
    ----------
 
-   procedure Scan (S : State) is
+   procedure Replay (S : State) is
       B              : Block;
       R              : Log_Record;
       Valid          : Boolean;
@@ -71,6 +71,6 @@ package body Legder.Log with SPARK_Mode is
       if Expected_Seq - 1 /= S.Last_Seq then
          raise Program_Error with "Log sequence mismatch";
       end if;
-   end Scan;
+   end Replay;
 
 end Legder.Log;
