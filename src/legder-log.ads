@@ -47,7 +47,7 @@ package Legder.Log with SPARK_Mode is
      with Post => S.Opened;
    --  Scans from block 0, stops at the first gap, sets Head and
    --  Last_Seq. Recovered is how many valid records were found. The
-   --  store replays them through Scan.
+   --  store replays them through Replay.
 
    procedure Append (S : in out State; Kind : Op_Kind; K : Key; V : Value; Success : out Boolean)
      with Pre  => S.Opened,
@@ -61,9 +61,15 @@ package Legder.Log with SPARK_Mode is
 
    generic
       with procedure Visit (R : Log_Record);
-   procedure Scan (S : State)
+   procedure Replay (S : State)
      with Pre => S.Opened;
-   --  Calls Visit for each committed record, in order, from block 0
-   --  to Head - 1. Used by Open (to count) and by the store (to replay).
+   --  Calls Visit once per recovered record, in ascending sequence order,
+   --  from block 0 to Head - 1. An empty log makes no calls. Open must
+   --  precede replay, and neither the device nor S may change during it.
+   --  Invalid records or sequence changes raise Program_Error; device and
+   --  visitor exceptions propagate to the caller.
+
+   generic procedure Scan renames Replay;
+   --  Compatibility name for existing callers.
 
 end Legder.Log;

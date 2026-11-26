@@ -86,8 +86,28 @@ Three cases at the boundary, all handled by the same test:
 - block holds an old valid record from a previous life of the device
   (e.g. after a future compaction): Seq is wrong, stop
 
-`Scan` replays the accepted prefix through a generic `Visit`. `Open`
-and the store use the same walk, so they cannot disagree.
+### WAL replay interface
+
+Recovery calls `Legder.Log.Open` to discover the valid prefix, then
+instantiates `Legder.Log.Replay` with a callback accepting a
+`Legder.Record_Format.Log_Record`:
+
+```ada
+procedure Apply_Record (R : Legder.Record_Format.Log_Record);
+procedure Replay_All is new L.Replay (Apply_Record);
+-- L is an instance of Legder.Log; S is an L.State.
+L.Open (S, Recovered);
+Replay_All (S);
+```
+
+`Replay` calls the callback once per recovered record in ascending sequence
+order, including both `Put` and `Delete` operations. An empty log produces
+no callbacks. The callback can apply each record to rebuild recovery state;
+`Legder.Store.Open` uses this interface with its existing `Apply` routine.
+Keep the log state and device unchanged during replay. Invalid records or
+sequence changes raise `Program_Error`, and device or callback exceptions
+propagate. Replay is not atomic: callbacks already completed are not undone
+if a later callback fails. `Scan` remains a compatibility name for `Replay`.
 
 No compaction in v1: when Head passes Block_Count the log is full and
 Append fails. Milestone 3.
@@ -96,7 +116,7 @@ Append fails. Milestone 3.
 
 A fixed array of `Max_Entries` slots. `Put`/`Delete`: refuse early if
 the table cannot take the key (S3), else `Append`, and only on success
-`Apply` the record to the table. `Open`: `Log.Open` then `Scan` with
+`Apply` the record to the table. `Open`: `Log.Open` then `Replay` with
 `Apply` as the visitor. One `Apply` for both live updates and replay.
 
 The index (linear scan) is the placeholder. Replace it; keep the
